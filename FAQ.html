@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>업무 FAQ 검색</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --card: #ffffff;
+      --text: #1f2937;
+      --subtext: #6b7280;
+      --border: #dfe3e8;
+      --primary: #1f6f43;
+      --primary-light: #e9f5ee;
+      --highlight: #fff3a6;
+      --shadow: 0 8px 24px rgba(0,0,0,0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR",
+                   "Apple SD Gothic Neo", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .app {
+      width: min(980px, calc(100% - 32px));
+      margin: 48px auto;
+    }
+
+    .header {
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      line-height: 1.3;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--subtext);
+      font-size: 15px;
+    }
+
+    .search-panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 0;
+      height: 48px;
+      padding: 0 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 16px;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(31,111,67,0.10);
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .filter-btn {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 9px 15px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .filter-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .result-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0 12px;
+    }
+
+    .result-count {
+      font-weight: 700;
+    }
+
+    .reset-btn {
+      border: 1px solid var(--primary);
+      background: #fff;
+      color: var(--primary);
+      border-radius: 8px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .results {
+      display: grid;
+      gap: 14px;
+    }
+
+    .faq-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+    }
+
+    .category-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .question {
+      margin: 0 0 12px;
+      font-size: 18px;
+      line-height: 1.55;
+    }
+
+    .answer {
+      margin: 0;
+      color: #374151;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    mark {
+      background: var(--highlight);
+      color: inherit;
+      padding: 0 2px;
+      border-radius: 3px;
+    }
+
+    .empty {
+      background: #fff;
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--subtext);
+    }
+
+    @media (max-width: 640px) {
+      .app {
+        margin: 28px auto;
+      }
+
+      h1 {
+        font-size: 26px;
+      }
+
+      .search-row {
+        flex-direction: column;
+      }
+
+      .result-toolbar {
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <h1>업무 FAQ 검색</h1>
+      <p class="subtitle">질문이나 키워드를 입력해 업무 FAQ를 검색하세요.</p>
+    </header>
+
+    <section class="search-panel">
+      <div class="search-row">
+        <input
+          id="searchInput"
+          class="search-input"
+          type="search"
+          placeholder="질문이나 키워드를 입력하세요."
+          aria-label="FAQ 검색어"
+        />
+      </div>
+
+      <div class="filters" aria-label="FAQ 분류">
+        <button class="filter-btn active" data-category="전체">전체</button>
+        <button class="filter-btn" data-category="교육">교육</button>
+        <button class="filter-btn" data-category="문서">문서</button>
+        <button class="filter-btn" data-category="IT">IT</button>
+        <button class="filter-btn" data-category="보안">보안</button>
+      </div>
+    </section>
+
+    <section>
+      <div class="result-toolbar">
+        <div id="resultCount" class="result-count">검색 결과 0건</div>
+        <button id="resetBtn" class="reset-btn" type="button">전체보기</button>
+      </div>
+
+      <div id="results" class="results"></div>
+    </section>
+  </main>
+
+  <script>
+    const faqData = [{"category": "교육", "question": "교육 신청은 어디에서 하나요?", "answer_seed": "교육 포털의 과정 검색 후 신청 메뉴를 사용합니다."}, {"category": "교육", "question": "신청한 교육을 취소하려면 어떻게 하나요?", "answer_seed": "신청내역에서 취소 가능 여부를 확인합니다."}, {"category": "문서", "question": "주간 업무보고에는 무엇을 넣어야 하나요?", "answer_seed": "주요 실적, 이슈, 다음 주 계획을 중심으로 작성합니다."}, {"category": "IT", "question": "사내 시스템 접속이 되지 않습니다.", "answer_seed": "네트워크, 브라우저, 계정 상태를 순서대로 확인합니다."}, {"category": "보안", "question": "ChatGPT에 내부 업무자료를 넣어도 되나요?", "answer_seed": "교육에서는 합성자료를 사용하고, 실제 자료는 조직의 보안 및 AI 사용 기준을 먼저 확인합니다."}];
+
+    const searchInput = document.getElementById("searchInput");
+    const resultCount = document.getElementById("resultCount");
+    const results = document.getElementById("results");
+    const resetBtn = document.getElementById("resetBtn");
+    const filterButtons = [...document.querySelectorAll(".filter-btn")];
+
+    let activeCategory = "전체";
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeRegExp(value) {
+      return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    function highlightText(text, keyword) {
+      const safeText = escapeHtml(text);
+      const trimmed = keyword.trim();
+
+      if (!trimmed) return safeText;
+
+      const regex = new RegExp(`(${escapeRegExp(trimmed)})`, "gi");
+      return safeText.replace(regex, "<mark>$1</mark>");
+    }
+
+    function getFilteredFaqs() {
+      const keyword = searchInput.value.trim().toLowerCase();
+
+      return faqData.filter(item => {
+        const categoryMatch =
+          activeCategory === "전체" || item.category === activeCategory;
+
+        const keywordMatch =
+          !keyword ||
+          item.question.toLowerCase().includes(keyword) ||
+          item.answer_seed.toLowerCase().includes(keyword) ||
+          item.category.toLowerCase().includes(keyword);
+
+        return categoryMatch && keywordMatch;
+      });
+    }
+
+    function render() {
+      const keyword = searchInput.value.trim();
+      const filtered = getFilteredFaqs();
+
+      resultCount.textContent = `검색 결과 ${filtered.length}건`;
+
+      if (filtered.length === 0) {
+        results.innerHTML =
+          '<div class="empty">검색 조건과 일치하는 FAQ가 없습니다.</div>';
+        return;
+      }
+
+      results.innerHTML = filtered.map(item => `
+        <article class="faq-card">
+          <div class="category-badge">${highlightText(item.category, keyword)}</div>
+          <h2 class="question">${highlightText(item.question, keyword)}</h2>
+          <p class="answer">${highlightText(item.answer_seed, keyword)}</p>
+        </article>
+      `).join("");
+    }
+
+    searchInput.addEventListener("input", render);
+
+    filterButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        activeCategory = button.dataset.category;
+
+        filterButtons.forEach(btn =>
+          btn.classList.toggle("active", btn === button)
+        );
+
+        render();
+      });
+    });
+
+    resetBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      activeCategory = "전체";
+
+      filterButtons.forEach(btn =>
+        btn.classList.toggle("active", btn.dataset.category === "전체")
+      );
+
+      searchInput.focus();
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
